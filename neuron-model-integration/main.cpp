@@ -11,35 +11,15 @@ using namespace std;
 
 #define TIME 120		//Время моделирования
 
-#define NUMAVE 50000	//Количество прогонов для усреднения
+#define NUMAVE 10000	//Количество прогонов для усреднения
 double FREQ = 140;		//Частота синусоидального сигнала
 double SIGNAL = -4;		//Наличие сигнала (0 - без сигнала; <0 - синус; >0 - DC, равный значению);
 double STEP = 0.01; 	//Шаг по времени. 0.001 = 1 микросекунда
 int METHOD = 1;			// Метод интегрирования. 1 = Хьюн. 2 = Эйлер. 3 = Рунге-кутты
 
 void nul(double *V){	// Обнуление переменных системы
-	V[0] = 0.000277;
-	V[1] = 0.0529;
-	V[2] = 0.5961;
-	V[3] = 0.3177;
-
-	/*	V[0] = 3.75891;
-	V[1] = 0.6;
-	V[2] = 0.22;
-	V[3] = 0.6;*/
-
-
-	/*7	V[0] = 4.21668;
-	V[1] = 0.0858722;
-	V[2] = 0.445565;
-	V[3] = 0.383789;*/
-
-	/*9	V[0] = 5.04772;
-	V[1] = 0.094134;
-	V[2] = 0.416498;
-	V[3] = 0.397029;*/
-
-
+	V[0] = -1.1;
+	V[1] = -0.656;
 }
 
 
@@ -78,7 +58,7 @@ void escape_time_parallel_launch(ofstream *fout){
 #pragma omp for
 			
 			for (int k = 0; k < NUMAVE; k++){
-				double *Y = new double[4];
+				double *Y = new double[2];
 				nul(Y);
 				double noise = 0.0;
 				//double oldnoise = 0.0;
@@ -115,17 +95,37 @@ void escape_time_parallel_launch(ofstream *fout){
 	}
 }
 
+void simplelaunch(ofstream *fout){
+
+	double dispercy = 0.001;
+	double noise;
+	double *V = new double[N];
+	setParams(STEP, 0);
+	nul(V);
+				for (double i = 0; i < TIME; i += STEP){
+
+					noise = newnoise();
+
+
+					//Model_next_Step(V, i, STEP, FREQ, SIGNAL, (noise * sqrt(2 * dispercy * STEP)), METHOD);
+					Model_next_Step(V, i, STEP, 0, 0, 0, METHOD);
+
+					*fout << i << " " << *V << " " << V[1] << "\n";
+				}
+	delete V;
+			
+}
+
 
 int main(){
 	ofstream fout("output.txt");
-
-	double noise;
+	//simplelaunch(&fout);
 
 	//	ifstream fin("input.txt");
 
 	srand(time(NULL));
 
-	//	simplelaunch(&fout);
+
 	//	somelaunch(&fout);
 	//	escape_time_parallel_launch(&fout);
 	//	qq123(&fout);
@@ -157,7 +157,10 @@ int main(){
 		fout.close();
 	}*/
 
-	for (FREQ = 120; FREQ <= 140; FREQ += 20){
+
+
+
+	for (FREQ = 140; FREQ <= 140; FREQ += 5){
 		std::cout << "FREQ = " << FREQ << "\n";
 		std::ostringstream strs;
 		strs << FREQ;

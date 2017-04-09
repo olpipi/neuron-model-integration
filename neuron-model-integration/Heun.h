@@ -1,7 +1,7 @@
 #ifndef __Heun__
 #define __Heun__
 
-#define N 4 
+#define N 2 
 
 typedef double vector[N];
 typedef double(*funcdef)(double x, vector y);
