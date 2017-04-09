@@ -11,7 +11,7 @@ using namespace std;
 
 #define TIME 120		//Время моделирования
 
-#define NUMAVE 10000	//Количество прогонов для усреднения
+#define NUMAVE 70000	//Количество прогонов для усреднения
 double FREQ = 140;		//Частота синусоидального сигнала
 double SIGNAL = -4;		//Наличие сигнала (0 - без сигнала; <0 - синус; >0 - DC, равный значению);
 double STEP = 0.01; 	//Шаг по времени. 0.001 = 1 микросекунда
@@ -68,19 +68,15 @@ void escape_time_parallel_launch(ofstream *fout){
 
 					noise = newnoise();
 
-					//oldnoise = noise;
-					//noise = newnoise();
-
 
 					Model_next_Step(Y, i, STEP, FREQ, SIGNAL, (noise * sqrt(2 * dispercy * STEP)), METHOD);
 
 
-					if (Y[0] > 30) {
+					if (Y[0] > 1) {
 						EscTime += i;
 						EscTime2 += i*i;
 						break;
 					}
-					//*fout << i << " " << *Y << " " << 4 * sin(2 * 3.14 * FREQ * i * 0.001) - 40 << "\n";
 				}
 				delete Y;
 			}
@@ -91,7 +87,7 @@ void escape_time_parallel_launch(ofstream *fout){
 		//unsigned int search_time = end_time - start_time; // искомое время
 
 		*fout << dispercy << " " << EscTime << " " << sqrt(EscTime2 - EscTime*EscTime) << " " << sqrt(EscTime2 - EscTime*EscTime) / EscTime << "\n";
-		dispercy *= 1.1;
+		dispercy *= 1.05;
 	}
 }
 
@@ -160,7 +156,7 @@ int main(){
 
 
 
-	for (FREQ = 140; FREQ <= 140; FREQ += 5){
+	for (FREQ = 20; FREQ <= 150; FREQ += 5){
 		std::cout << "FREQ = " << FREQ << "\n";
 		std::ostringstream strs;
 		strs << FREQ;
