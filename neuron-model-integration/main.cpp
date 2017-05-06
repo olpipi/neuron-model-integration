@@ -11,7 +11,7 @@ using namespace std;
 
 #define TIME 120		//Время моделирования
 
-#define NUMAVE 70000	//Количество прогонов для усреднения
+#define NUMAVE 40000	//Количество прогонов для усреднения
 double FREQ = 140;		//Частота синусоидального сигнала
 double SIGNAL = -4;		//Наличие сигнала (0 - без сигнала; <0 - синус; >0 - DC, равный значению);
 double STEP = 0.01; 	//Шаг по времени. 0.001 = 1 микросекунда
@@ -42,17 +42,19 @@ void escape_time_parallel_launch(ofstream *fout){
 
 	double EscTime = 0.0;
 	double EscTime2 = 0.0;
-	double dispercy = 0.001;
+	double dispercy = 0.01;
 
-	while (dispercy < 100) {
+	while (dispercy < 10) {
 		EscTime = 0.0;
 		EscTime2 = 0.0;
 		system("cls");
 		std::cout << FREQ << ":  " << dispercy;
 		//unsigned int start_time = clock();
 		setParams(STEP, FREQ);
+		double noiseParam = sqrt(2 * dispercy * STEP);
+		double noise = 0.0;
 
-#pragma omp parallel reduction(+:EscTime,EscTime2) num_threads(4)
+#pragma omp parallel reduction(+:EscTime,EscTime2) num_threads(4) private(noise)
 		{
 			//			std::cout << omp_get_thread_num() << " ";
 #pragma omp for
@@ -60,7 +62,7 @@ void escape_time_parallel_launch(ofstream *fout){
 			for (int k = 0; k < NUMAVE; k++){
 				double *Y = new double[2];
 				nul(Y);
-				double noise = 0.0;
+				
 				//double oldnoise = 0.0;
 
 
@@ -69,7 +71,7 @@ void escape_time_parallel_launch(ofstream *fout){
 					noise = newnoise();
 
 
-					Model_next_Step(Y, i, STEP, FREQ, SIGNAL, (noise * sqrt(2 * dispercy * STEP)), METHOD);
+					Model_next_Step(Y, i, STEP, FREQ, SIGNAL, noise * noiseParam, METHOD);
 
 
 					if (Y[0] > 1) {
@@ -78,7 +80,7 @@ void escape_time_parallel_launch(ofstream *fout){
 						break;
 					}
 				}
-				delete Y;
+				delete []Y;
 			}
 		}
 		EscTime /= NUMAVE;
@@ -87,7 +89,7 @@ void escape_time_parallel_launch(ofstream *fout){
 		//unsigned int search_time = end_time - start_time; // искомое время
 
 		*fout << dispercy << " " << EscTime << " " << sqrt(EscTime2 - EscTime*EscTime) << " " << sqrt(EscTime2 - EscTime*EscTime) / EscTime << "\n";
-		dispercy *= 1.05;
+		dispercy *= 1.1;
 	}
 }
 
@@ -108,7 +110,7 @@ void simplelaunch(ofstream *fout){
 
 					*fout << i << " " << *V << " " << V[1] << "\n";
 				}
-	delete V;
+	delete []V;
 			
 }
 
@@ -156,7 +158,7 @@ int main(){
 
 
 
-	for (FREQ = 20; FREQ <= 150; FREQ += 5){
+	for (FREQ = 0.0131; FREQ <= 0.0133; FREQ += 0.0001){
 		std::cout << "FREQ = " << FREQ << "\n";
 		std::ostringstream strs;
 		strs << FREQ;
