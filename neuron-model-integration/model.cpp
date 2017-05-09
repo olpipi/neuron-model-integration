@@ -19,30 +19,20 @@ double step = 0.01;
 double W = 0;
 double signalCoef = 0;
 
-funcarr functions = { *funcX, *funcY };
 
 void setParams(double step, double freq){
 	W = freq;
 	::step = step;
-	signalCoef = 2 * 3.14159 * 0.001 * freq;
+	signalCoef = freq;
 }
 
-inline void heun_inline(double* Yn, double Xn, double step, funcarr func, double noise)
+inline void heun_inline(double* Yn, double Xn, double step, double noise)
 {
 
 	vector V, V1, nz, preV;
 
 	nz[0] = noise;
 	nz[1] = 0;
-
-
-	//double x = xPrev - xPrev * xPrev* xPrev * 0.3333333 - V[1] + 0.5 * sin(t * signalCoef);
-	//double m = 0.05 * V[0] + 0.055;
-
-	/*for (int i = 0; i < N; i++) {
-		V[i] = V1[i] = Yn[i];
-		preV[i] = func[i](Xn - step, Yn);
-	}*/
 
 	preV[0] = Yn[0] - Yn[0] * Yn[0] * Yn[0] * 0.3333333 - Yn[1] + 0.5 * sin((Xn - step) * signalCoef);
 	preV[1] = 0.05 * Yn[0] + 0.055;
@@ -56,14 +46,6 @@ inline void heun_inline(double* Yn, double Xn, double step, funcarr func, double
 	V1[0] = Yn[0] + 0.5 * (preV[0] + tmp1) * step + nz[0];
 
 
-	/*for (int i = 0; i < N; i++){
-		V[i] = Yn[i] + preV[i] * step + nz[i];
-		V1[i] = Yn[i] + 0.5 * (preV[i] + func[i](Xn, &V[0])) * step + nz[i];
-	}*/
-
-
-
-
 	for (int i = 0; i < N; i++) Yn[i] = V1[i];
 };
 
@@ -72,32 +54,11 @@ inline void heun_inline(double* Yn, double Xn, double step, funcarr func, double
 
 
 void Model_next_Step(double* Vn, double Xn, double st, double w, double signal, double noise, int method) {
-	//step = st;
-	//W = w;
 
-	//SIG = signal;
+	heun_inline(Vn, Xn, step, noise);
 
-		
-	//if (method == 1){
-	heun_inline(Vn, Xn, step, functions, noise);
-	//heun(Vn, Xn, step, functions, noise);
-	//}
-	/*if (method == 2){
-		euler_Maruyama(Vn, Xn, step, functions, noise);
-	}
-	if (method == 3){
-		Runge_Kutta_fourth_order(Vn, Xn, step, functions);
-		Vn[0] += noise;
-	}*/
 }
 
-double sig(double x){
-	if (SIG == 0) return 0;
-	double s = 0;
-	if (SIG < 0) s = -SIG * sin(2 * 3.14 * W * x * 0.001);
-	else s = SIG;
-	return s;
-}
 
 double funcX(double t, vector V){
 	double x;

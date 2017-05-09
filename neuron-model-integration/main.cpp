@@ -11,20 +11,20 @@ using namespace std;
 
 #define TIME 120		//Время моделирования
 
-#define NUMAVE 40000	//Количество прогонов для усреднения
+#define NUMAVE 50000	//Количество прогонов для усреднения
 double FREQ = 140;		//Частота синусоидального сигнала
 double SIGNAL = -4;		//Наличие сигнала (0 - без сигнала; <0 - синус; >0 - DC, равный значению);
 double STEP = 0.01; 	//Шаг по времени. 0.001 = 1 микросекунда
 int METHOD = 1;			// Метод интегрирования. 1 = Хьюн. 2 = Эйлер. 3 = Рунге-кутты
 
-void nul(double *V){	// Обнуление переменных системы
+inline void nul(double *V){	// Обнуление переменных системы
 	V[0] = -1.1;
 	V[1] = -0.656;
 }
 
 
 
-double newnoise(){	//Генерация Гауссого шума
+inline double newnoise(){	//Генерация Гауссого шума
 	double q, t1, t2, s;
 	do{
 		t1 = rand() / (double)RAND_MAX * 2 - 1;
@@ -42,9 +42,9 @@ void escape_time_parallel_launch(ofstream *fout){
 
 	double EscTime = 0.0;
 	double EscTime2 = 0.0;
-	double dispercy = 0.01;
+	double dispercy = 0.005;
 
-	while (dispercy < 10) {
+	while (dispercy < 50) {
 		EscTime = 0.0;
 		EscTime2 = 0.0;
 		system("cls");
@@ -54,7 +54,7 @@ void escape_time_parallel_launch(ofstream *fout){
 		double noiseParam = sqrt(2 * dispercy * STEP);
 		double noise = 0.0;
 
-#pragma omp parallel reduction(+:EscTime,EscTime2) num_threads(4) private(noise)
+#pragma omp parallel reduction(+:EscTime,EscTime2) num_threads(5) private(noise)
 		{
 			//			std::cout << omp_get_thread_num() << " ";
 #pragma omp for
@@ -87,9 +87,9 @@ void escape_time_parallel_launch(ofstream *fout){
 		EscTime2 /= NUMAVE;
 		//unsigned int end_time = clock(); // конечное время
 		//unsigned int search_time = end_time - start_time; // искомое время
-
-		*fout << dispercy << " " << EscTime << " " << sqrt(EscTime2 - EscTime*EscTime) << " " << sqrt(EscTime2 - EscTime*EscTime) / EscTime << "\n";
-		dispercy *= 1.1;
+		double tmp = sqrt(EscTime2 - EscTime*EscTime);
+		*fout << dispercy << " " << EscTime << " " << tmp << " " << tmp / EscTime << "\n";
+		dispercy *= 1.04;
 	}
 }
 
@@ -158,7 +158,7 @@ int main(){
 
 
 
-	for (FREQ = 0.0131; FREQ <= 0.0133; FREQ += 0.0001){
+	for (FREQ = 131; FREQ <= 133; FREQ += 1){
 		std::cout << "FREQ = " << FREQ << "\n";
 		std::ostringstream strs;
 		strs << FREQ;
