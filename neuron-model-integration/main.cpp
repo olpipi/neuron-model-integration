@@ -9,13 +9,15 @@
 
 using namespace std;
 
+//#define time_measurement
+
 #define TIME 120		//Время моделирования
 
-#define NUMAVE 50000	//Количество прогонов для усреднения
+#define NUMAVE 40000	//Количество прогонов для усреднения
 double FREQ = 140;		//Частота синусоидального сигнала
-double SIGNAL = -4;		//Наличие сигнала (0 - без сигнала; <0 - синус; >0 - DC, равный значению);
+double SIGNAL = 4;		//
 double STEP = 0.01; 	//Шаг по времени. 0.001 = 1 микросекунда
-int METHOD = 1;			// Метод интегрирования. 1 = Хьюн. 2 = Эйлер. 3 = Рунге-кутты
+
 
 void nul(double *V){	// Обнуление переменных системы
 	V[0] = 0.000277;
@@ -47,8 +49,8 @@ void nul(double *V){	// Обнуление переменных системы
 double newnoise(){	//Генерация Гауссого шума
 	double q, t1, t2, s;
 	do{
-		t1 = rand() / (double)RAND_MAX * 2 - 1;
-		t2 = rand() / (double)RAND_MAX * 2 - 1;
+		t1 = rand() * 0.00006103 - 1;
+		t2 = rand() * 0.00006103 - 1;
 		s = t1 * t1 + t2 * t2;
 	} while ((s) > 1);
 	q = t1 * sqrt(-2 * log(s) / s);
@@ -67,18 +69,18 @@ void escape_time_parallel_launch(ofstream *fout){
 	while (dispercy < 100) {
 		EscTime = 0.0;
 		EscTime2 = 0.0;
-		system("cls");
-		std::cout << FREQ << ":  " << dispercy;
-		//unsigned int start_time = clock();
-		setParams(STEP, FREQ);
+		std::cout << FREQ << ":  " << dispercy << "\n";
+#if defined(time_measurement)
+		unsigned int start_time = clock();
+#endif
+		setParams(SIGNAL, STEP, FREQ);
 
 #pragma omp parallel reduction(+:EscTime,EscTime2) num_threads(4)
 		{
 			//			std::cout << omp_get_thread_num() << " ";
+			double *Y = new double[4];
 #pragma omp for
-			
-			for (int k = 0; k < NUMAVE; k++){
-				double *Y = new double[4];
+			for (int k = 0; k < NUMAVE; k++){				
 				nul(Y);
 				double noise = 0.0;
 				//double oldnoise = 0.0;
@@ -92,7 +94,7 @@ void escape_time_parallel_launch(ofstream *fout){
 					//noise = newnoise();
 
 
-					Model_next_Step(Y, i, STEP, FREQ, SIGNAL, (noise * sqrt(2 * dispercy * STEP)), METHOD);
+					Model_next_Step(Y, i, STEP, FREQ, SIGNAL, (noise * sqrt(2 * dispercy * STEP)));
 
 
 					if (Y[0] > 30) {
@@ -102,17 +104,59 @@ void escape_time_parallel_launch(ofstream *fout){
 					}
 					//*fout << i << " " << *Y << " " << 4 * sin(2 * 3.14 * FREQ * i * 0.001) - 40 << "\n";
 				}
-				delete Y;
 			}
+			delete[]Y;
 		}
 		EscTime /= NUMAVE;
 		EscTime2 /= NUMAVE;
-		//unsigned int end_time = clock(); // конечное время
-		//unsigned int search_time = end_time - start_time; // искомое время
+#if defined(time_measurement)
+		unsigned int end_time = clock(); // конечное время
+		unsigned int search_time = end_time - start_time; // искомое время
+		cout << "Measured time: " << search_time << "\n";
+#endif
 
 		*fout << dispercy << " " << EscTime << " " << sqrt(EscTime2 - EscTime*EscTime) << " " << sqrt(EscTime2 - EscTime*EscTime) / EscTime << "\n";
 		dispercy *= 1.1;
 	}
+}
+
+void simplelaunch(std::ofstream *fout){
+
+	double dispercy = 0.000;
+	double noise;
+	double *Y = new double[4];
+	FREQ = 15.5;
+	SIGNAL = 4;
+	setParams(SIGNAL, STEP, FREQ);
+	nul(Y);
+	for (double i = 0; i < TIME; i += STEP){
+
+		//noise = newnoise();
+
+
+		//Model_next_Step(V, i, STEP, FREQ, SIGNAL, (noise * sqrt(2 * dispercy * STEP)), METHOD);
+		Model_next_Step(Y, i, STEP, FREQ, 0, 0);
+
+		*fout << i << " " << *Y << "\n";
+	}
+	delete[]Y;
+
+}
+
+bool isGenerating(){
+
+	double *Y = new double[4];
+	setParams(SIGNAL, STEP, FREQ);
+	nul(Y);
+	for (double i = 0; i < TIME; i += STEP){
+
+		Model_next_Step(Y, i, STEP, FREQ, 0, 0);
+		if (Y[0] > 30) return true;
+
+	}
+	delete[]Y;
+
+	return false;
 }
 
 
@@ -121,11 +165,27 @@ int main(){
 
 	double noise;
 
-	//	ifstream fin("input.txt");
+	ifstream fin("input.txt");
 
 	srand(time(NULL));
 
-	//	simplelaunch(&fout);
+	//simplelaunch(&fout);
+
+	
+	/*for (double i = 1.5; i <= 5; i += 0.1)
+	{
+		SIGNAL = i;
+		for (double j = 5; j < 60; j += 0.5){
+			FREQ = j;
+			if (isGenerating()) {
+				fout << i << " " << j << "\n";
+				cout << i << " " << j << "\n";
+				break;
+			}
+
+		}
+	}*/
+
 	//	somelaunch(&fout);
 	//	escape_time_parallel_launch(&fout);
 	//	qq123(&fout);
@@ -157,7 +217,7 @@ int main(){
 		fout.close();
 	}*/
 
-	for (FREQ = 120; FREQ <= 140; FREQ += 20){
+	/*for (FREQ = 20; FREQ <= 22; FREQ += 0.5){
 		std::cout << "FREQ = " << FREQ << "\n";
 		std::ostringstream strs;
 		strs << FREQ;
@@ -166,8 +226,8 @@ int main(){
 		ofstream fout(str);
 		escape_time_parallel_launch(&fout);
 
-		fout.close();
-	}
+		
+	}*/
 
 
 	/*FREQ = 20;
@@ -175,7 +235,29 @@ int main(){
 	simplelaunch(&fout);
 	fout.close();*/
 
+	while (true)  {
 
+		fin >> SIGNAL >> FREQ;
+		
+		if (fin.eof()) break;
+
+		//FREQ += 1.0;
+		for (int i = 0; i < 5; i++) {
+			FREQ += 0.5;
+			std::cout << "FREQ = " << FREQ << "\n";
+			std::ostringstream strs;
+			strs << SIGNAL << "_" << FREQ;
+			std::string str = strs.str();
+			str += ".txt";
+			ofstream fout(str);
+			escape_time_parallel_launch(&fout);
+		}
+
+	}
+
+
+	fout.close();
+	fin.close();
 	system("pause");
 	return 0;
 }

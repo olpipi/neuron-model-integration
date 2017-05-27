@@ -1,4 +1,4 @@
-#include <math.h>
+#include <mathimf.h>
 #include "model.h"
 #include "Runge_Kutta.h"	
 #include "Euler_Maruyama.h"
@@ -22,15 +22,16 @@ double signalCoef = 0;
 
 funcarr functions = { *funcv, *funcm, *funch, *funcn };
 
-void setParams(double step, double freq){
+void setParams(double signal, double step, double freq){
 	W = freq;
+	SIG = signal;
 	::step = step;
 	signalCoef = 2 * 3.14159 * 0.001 * freq;
 }
 
 
 
-void Model_next_Step(double* Vn, double Xn, double st, double w, double signal, double noise, int method) {
+void Model_next_Step(double* Vn, double Xn, double st, double w, double signal, double noise) {
 	//step = st;
 	//W = w;
 
@@ -49,6 +50,14 @@ void Model_next_Step(double* Vn, double Xn, double st, double w, double signal, 
 	}*/
 }
 
+ double exp2(double x) {
+	x = 1.0 + x / 1024;
+	x *= x; x *= x; x *= x; x *= x;
+	x *= x; x *= x; x *= x; x *= x;
+	x *= x; x *= x;
+	return x;
+}
+
 double sig(double x){
 	if (SIG == 0) return 0;
 	double s = 0;
@@ -64,22 +73,22 @@ double funcv(double x, vector y){
 	double Ina = -120.0 * (y[0] - 115.0) * pow(y[1], 3) * y[2];
 	double Il = -0.3  * (y[0] - 10.6);
 
-	v = Ik + Ina + Il + 4.0 * sin( x * signalCoef );
+	v = Ik + Ina + Il + SIG * sin(x * signalCoef);
 	return v;
 }
 double funcm(double x, vector y){
 	double m;
 
-	double am = 0.1 * (25.0 - y[0]) / (exp((25.0 - y[0]) * 0.1) - 1.0);
-	double bm = 4.0 * exp(y[0] * -0.0555555555);
+	double am = 0.1 * (25.0 - y[0]) / (exp2((25.0 - y[0]) * 0.1) - 1.0);
+	double bm = 4.0 * exp2(y[0] * -0.0555555555);
 	m = am * (1 - y[1]) - bm * y[1];
 	return m;
 }
 double funch(double x, vector y){
 	double h;
 
-	double ah = 0.07 * exp(y[0] * -0.05);
-	double bh = 1.0 / (exp((30.0 - y[0]) * 0.1) + 1);
+	double ah = 0.07 * exp2(y[0] * -0.05);
+	double bh = 1.0 / (exp2((30.0 - y[0]) * 0.1) + 1);
 
 	h = ah * (1.0 - y[2]) - bh * y[2];
 	return h;
@@ -87,8 +96,8 @@ double funch(double x, vector y){
 double funcn(double x, vector y){
 	double n;
 
-	double an = 0.01 * (10.0 - y[0]) / (exp((10.0 - y[0]) * 0.1) - 1.0);
-	double bn = 0.125 * exp(y[0] * -0.0125);
+	double an = 0.01 * (10.0 - y[0]) / (exp2((10.0 - y[0]) * 0.1) - 1.0);
+	double bn = 0.125 * exp2(y[0] * -0.0125);
 
 	n = an * (1 - y[3]) - bn * y[3];
 	return n;
