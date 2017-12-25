@@ -1,5 +1,7 @@
 #include "model.h"
 #include "Runge_Kutta.h"
+#include "IntelGenerator.h"
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
