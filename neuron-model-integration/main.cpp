@@ -11,9 +11,12 @@
 
 using namespace std;
 
-#define TIME 120		//Время моделирования
+#define INTEL_RANDOM_GENERATOR
 
-#define NUMAVE 50000	//Количество прогонов для усреднения
+
+#define TIME 40		//Время моделирования
+
+#define NUMAVE 40000	//Количество прогонов для усреднения
 double FREQ = 140;		//Частота синусоидального сигнала
 double SIGNAL = -4;		//Наличие сигнала (0 - без сигнала; <0 - синус; >0 - DC, равный значению);
 double STEP = 0.01; 	//Шаг по времени. 0.001 = 1 микросекунда
@@ -23,8 +26,6 @@ inline void nul(double *V){	// Обнуление переменных системы
 	V[0] = -1.1;
 	V[1] = -0.656;
 }
-
-
 
 inline double newnoise(){	//Генерация Гауссого шума
 	double q, t1, t2, s;
@@ -39,14 +40,13 @@ inline double newnoise(){	//Генерация Гауссого шума
 	return q;
 }
 
-
 void escape_time_parallel_launch(ofstream *fout){
 
 	double EscTime = 0.0;
 	double EscTime2 = 0.0;
-	double dispercy = 0.005;
+	double dispercy = 0.05;
 
-	while (dispercy < 50) {
+	while (dispercy <= 0.05) {
 		EscTime = 0.0;
 		EscTime2 = 0.0;
 		system("cls");
@@ -56,7 +56,7 @@ void escape_time_parallel_launch(ofstream *fout){
 		double noiseParam = sqrt(2 * dispercy * STEP);
 		double noise = 0.0;
 
-#pragma omp parallel reduction(+:EscTime,EscTime2) num_threads(5) private(noise)
+#pragma omp parallel reduction(+:EscTime,EscTime2) num_threads(4) private(noise)
 		{
 			//			std::cout << omp_get_thread_num() << " ";
 #pragma omp for
@@ -65,24 +65,33 @@ void escape_time_parallel_launch(ofstream *fout){
 				double *Y = new double[2];
 				nul(Y);
 				
-				//double oldnoise = 0.0;
+				int steps = (int)TIME / STEP;
+#ifdef INTEL_RANDOM_GENERATOR
+				double* noiseArray = new double[steps + 10];
 
+				getNoiseArray(0, noiseParam, steps + 10, noiseArray);
+#endif
+				for (int i = 0, double currentTime = 0; currentTime < TIME; i++, currentTime += STEP){
 
-				for (double i = 0; i < TIME; i += STEP){
+#ifdef INTEL_RANDOM_GENERATOR
+					noise = noiseArray[i + 10];
+#else
+					noise = newnoise() * noiseParam;
+#endif
 
-					noise = newnoise();
-
-
-					Model_next_Step(Y, i, STEP, FREQ, SIGNAL, noise * noiseParam, METHOD);
+					Model_next_Step(Y, i, STEP, FREQ, SIGNAL, noise , METHOD);
 
 
 					if (Y[0] > 1) {
-						EscTime += i;
-						EscTime2 += i*i;
+						EscTime += currentTime;
+						EscTime2 += currentTime*currentTime;
 						break;
 					}
 				}
 				delete []Y;
+#ifdef INTEL_RANDOM_GENERATOR
+				delete noiseArray;
+#endif
 			}
 		}
 		EscTime /= NUMAVE;
@@ -91,7 +100,7 @@ void escape_time_parallel_launch(ofstream *fout){
 		//unsigned int search_time = end_time - start_time; // искомое время
 		double tmp = sqrt(EscTime2 - EscTime*EscTime);
 		*fout << dispercy << " " << EscTime << " " << tmp << " " << tmp / EscTime << "\n";
-		dispercy *= 1.04;
+		dispercy *= 1.14;
 	}
 }
 
@@ -158,9 +167,12 @@ int main(){
 	}*/
 
 
+	clock_t t1, t2;
+	t1 = clock();
+	
+	
 
-
-	for (FREQ = 131; FREQ <= 133; FREQ += 1){
+	for (FREQ = 131; FREQ <= 131; FREQ += 1){
 		std::cout << "FREQ = " << FREQ << "\n";
 		std::ostringstream strs;
 		strs << FREQ;
@@ -171,6 +183,13 @@ int main(){
 
 		fout.close();
 	}
+
+
+
+	
+	t2 = clock();
+	float diff((float)t2 - (float)t1);
+	cout << "\n" << diff << "\n";
 
 
 	/*FREQ = 20;
