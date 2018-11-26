@@ -43,7 +43,7 @@ inline void heun_inline(double* Yn, double Xn, double step, double noise)
 	double tmp = V[0] - V[0] * V[0] * V[0] * 0.3333333 - V[1] + 0.5 * sin(Xn * signalCoef);
 	V1[0] = Yn[0] + 0.5 * (preV[0] + tmp) * step + nz[0];
 	double tmp1 = 0.05 * V[0] + 0.055;
-	V1[0] = Yn[0] + 0.5 * (preV[0] + tmp1) * step + nz[0];
+	V1[1] = Yn[1] + 0.5 * (preV[0] + tmp1) * step + nz[0];
 
 
 	for (int i = 0; i < N; i++) Yn[i] = V1[i];
@@ -54,8 +54,8 @@ inline void heun_inline(double* Yn, double Xn, double step, double noise)
 
 
 void Model_next_Step(double* Vn, double Xn, double st, double w, double signal, double noise, int method) {
-
-	heun_inline(Vn, Xn, step, noise);
+    SIG = signal;
+    heun_inline(Vn, Xn, step, noise);
 
 }
 
