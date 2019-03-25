@@ -6,7 +6,7 @@ void heun(double* Yn, double Xn, double step, funcarr func, double noise){
 	vector V, V1, nz, preV;
 
 	nz[0] = noise;
-	nz[1] = nz[2] = nz[3] = 0;
+	nz[1] = 0;
 
 	for (int i = 0; i < N; i++) {
 		V[i] = V1[i] = Yn[i];

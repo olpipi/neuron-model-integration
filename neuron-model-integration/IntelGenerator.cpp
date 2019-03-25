@@ -9,6 +9,7 @@ WORD getStandartSeed() {
 	SYSTEMTIME* st = new SYSTEMTIME();
 	GetSystemTime(st);
 	time = st->wMilliseconds;
+	delete st;
 	return time;
 }
 
