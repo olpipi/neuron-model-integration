@@ -29,28 +29,28 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseIntelMKL>Parallel</UseIntelMKL>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseIntelMKL>Sequential</UseIntelMKL>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 19.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <UseIntelMKL>Parallel</UseIntelMKL>
@@ -78,12 +78,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)\build\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)\build\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -96,10 +98,13 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <OpenMP>GenerateParallelCode</OpenMP>
       <DisablePrecompiledHeaderMessages>true</DisablePrecompiledHeaderMessages>
+      <AdditionalIncludeDirectories>$(SolutionDir)\model;$(SolutionDir)\integration;$(SolutionDir)\noise-generator;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)\model;$(SolutionDir)\integration;$(SolutionDir)\noise-generator;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>integration.lib;model.lib;noise-generator.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -113,13 +118,14 @@
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
       <DisablePrecompiledHeaderMessages>true</DisablePrecompiledHeaderMessages>
-      <AdditionalIncludeDirectories>$(SolutionDir)\model;$(SolutionDir)\Integration;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\model;$(SolutionDir)\integration;$(SolutionDir)\noise-generator;</AdditionalIncludeDirectories>
+      <OpenMP>GenerateParallelCode</OpenMP>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\model;$(SolutionDir)\Integration;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;integration.lib;model.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\build\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>integration.lib;model.lib;noise-generator.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -133,12 +139,16 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\model;$(SolutionDir)\integration;$(SolutionDir)\noise-generator;</AdditionalIncludeDirectories>
+      <OpenMP>GenerateParallelCode</OpenMP>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)\model;$(SolutionDir)\integration;$(SolutionDir)\noise-generator;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>integration.lib;model.lib;noise-generator.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -154,22 +164,18 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <OpenMP>GenerateParallelCode</OpenMP>
       <DisablePrecompiledHeaderMessages>true</DisablePrecompiledHeaderMessages>
-      <AdditionalIncludeDirectories>$(SolutionDir)\model;$(SolutionDir)\Integration;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\model;$(SolutionDir)\integration;$(SolutionDir)\noise-generator;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\model;$(SolutionDir)\Integration;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;integration.lib;model.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\build\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>integration.lib;model.lib;noise-generator.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="IntelGenerator.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="IntelGenerator.cpp" />
     <ClCompile Include="neuron-model-integration.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

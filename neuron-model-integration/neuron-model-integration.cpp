@@ -5,7 +5,7 @@
 
 #include "model.h"
 #include "integration.h"
-#include "IntelGenerator.h"
+#include "noise-generator.h"
 
 #include <fstream>
 #include <iostream>
