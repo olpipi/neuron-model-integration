@@ -18,7 +18,7 @@ using namespace std;
 
 #define INTEL_RANDOM_GENERATOR
 
-#define TIME 4000
+#define TIME 400
 
 #define NUMAVE 10000
 
@@ -133,22 +133,23 @@ void escape_time_parallel_launch(ofstream *fout) {
         dispercy *= NOISE_STEP;
     }
 }
-#if 0
+
 void simplelaunch(ofstream *fout) {
 
-    double dispercy = 0.001;
+    double dispercy = 0.01;
     double noise;
+    FREQ = 1.5;
+    SIGNAL = 0.5;
     double *V = new double[N];
-    setParams(STEP, FREQ);
-    nul(V);
+    setParams(STEP, FREQ, SIGNAL);
+    setDefaultPoint(V);
+
     for (double i = 0; i < TIME; i += STEP) {
 
         noise = newnoise();
 
-
-        //Model_next_Step(V, i, STEP, FREQ, SIGNAL, (noise * sqrt(2 * dispercy * STEP)), METHOD);
-        Model_next_Step(V, i, STEP, FREQ, SIGNAL, 0, METHOD);
-
+        //Model_next_Step(V, i, (noise * sqrt(2 * dispercy * STEP)));
+        Model_next_Step(V, i, 0);
         *fout << i << " " << *V << " " << V[1] << "\n";
     }
     delete[]V;
@@ -157,12 +158,13 @@ void simplelaunch(ofstream *fout) {
 
 inline double generatingTime() {
     double *Y = new double[2];
-    nul(Y);
-    for (double i = 0; i < TIME; i += STEP) {
+    setDefaultPoint(Y);
+    for (double i = 0; i <= TIME; i += STEP) {
 
-        Model_next_Step(Y, i, 0, 0, SIGNAL, 0, 0);
+        Model_next_Step(Y, i, 0 /*noise*/);
 
-        if (Y[0] > 1) {
+        if (Y[0] > 0) {
+            delete[]Y;
             return i;
         }
     }
@@ -173,11 +175,11 @@ inline double generatingTime() {
 
 void getAllGeneratingTime(ofstream *fout) {
     double tmp;
-    for (SIGNAL = 0.1; SIGNAL <= 1; SIGNAL += 0.02)
+    for (SIGNAL = 0.1; SIGNAL <= 1.0; SIGNAL += 0.1)
     {
-        for (FREQ = 0.001; FREQ < 2; FREQ *= 1.05)
+        for (FREQ = 0.001; FREQ < 0.2; FREQ *= 1.05)
         {
-            setParams(STEP, FREQ);
+            setParams(STEP, FREQ, SIGNAL);
             tmp = generatingTime();
             if (-1 == tmp) continue;
             cout << SIGNAL << " " << FREQ << " " << tmp << "\n";
@@ -186,24 +188,30 @@ void getAllGeneratingTime(ofstream *fout) {
         }
     }
 }
-#endif
 
 
 int main() {
 
-    //FREQ = 0.1;
-    //SIGNAL = 0.5;
-
-    //ofstream fout("out.txt");
-    //
+#if 1
+    ofstream fout("out1.txt");
+    
+    getAllGeneratingTime(&fout);
     //simplelaunch(&fout);
+    fout.close();
 
-    //fout.close();
+#else
+    ifstream fin("input.txt");
 
+    double dummy;
+    fin >> SIGNAL >> FREQ >> dummy;
     FREQ = FREQ_START;
 
-    while (FREQ <= FREQ_FINISH)
+    while (!fin.eof())
     {
+
+        double dummy;
+        fin >> SIGNAL >> FREQ >> dummy;
+
         std::cout << "FREQ = " << FREQ << "\n";
         std::ostringstream strs;
         strs << SIGNAL << "_" << FREQ;
@@ -216,105 +224,11 @@ int main() {
         fout.close();
 
     }
+    fin.close();
 
 
+#endif
 
     return 0;
 }
 
-//
-//
-//int main() {
-//    ofstream fout("output.txt");
-//    simplelaunch(&fout);
-//
-//    ifstream fin("input.txt");
-//
-//    srand(time(NULL));
-//
-//
-//        somelaunch(&fout);
-//        escape_time_parallel_launch(&fout);
-//        qq123(&fout);
-//
-//    /*    ofstream fout6("6.txt");
-//    ofstream fout7("7.txt");
-//    ofstream fout9("9.txt");
-//
-//    SIGNAL = 6;
-//    escape_time_parallel_launch(&fout6);
-//    fout6.close();
-//    SIGNAL = 7;
-//    escape_time_parallel_launch(&fout7);
-//    fout7.close();
-//    SIGNAL = 9;
-//    escape_time_parallel_launch(&fout9);
-//    fout9.close();*/
-//
-//
-//    /*for (METHOD = 1; METHOD <= 1; METHOD += 1){
-//        std::cout << "METHOD = " << METHOD << "\n";
-//        std::ostringstream strs;
-//        strs << METHOD;
-//        std::string str = strs.str();
-//        str += ".txt";
-//        ofstream fout(str);
-//        escape_time_parallel_launch(&fout);
-//
-//        fout.close();
-//    }*/
-//
-//
-//    clock_t t1, t2;
-//    t1 = clock();
-//
-//
-//
-//    /*for (FREQ = 131; FREQ <= 131; FREQ += 1) {
-//        std::cout << "FREQ = " << FREQ << "\n";
-//        std::ostringstream strs;
-//        strs << FREQ;
-//        std::string str = strs.str();
-//        str += ".txt";
-//        ofstream fout(str);
-//        escape_time_parallel_launch(&fout);
-//
-//        fout.close();
-//    }*/
-//
-//    double dummy;
-//    while (!fin.eof()) {
-//
-//        fin >> SIGNAL >> FREQ >> dummy;
-//
-//        FREQ += 1.0;
-//        for (int i = 0; i < 5; i++) {
-//            FREQ *= 1.02;
-//            std::cout << "FREQ = " << FREQ << "\n";
-//            std::ostringstream strs;
-//            strs << SIGNAL << "_" << FREQ;
-//            std::string str = strs.str();
-//            str += ".txt";
-//            ofstream fout(str);
-//            escape_time_parallel_launch(&fout);
-//            fout.close();
-//
-//        }
-//
-//
-//    }
-//
-//    t2 = clock();
-//    float diff((float)t2 - (float)t1);
-//    cout << "\n" << diff << "\n";
-//
-//
-//    /*FREQ = 20;
-//    SIGNAL = -4;
-//    simplelaunch(&fout);
-//    fout.close();*/
-//
-//
-//    system("pause");
-//    return 0;
-//}

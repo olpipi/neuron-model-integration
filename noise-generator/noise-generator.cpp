@@ -1,7 +1,6 @@
 #include "noise-generator.h"
-#include "mkl.h"
 #include <Windows.h>
-
+#include "pch.h"
 
 
 WORD getStandartSeed() {

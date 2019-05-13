@@ -36,7 +36,7 @@ void heun(double* Yn, double Xn, double noise)
 {
     neuron_model::vector V, V1, preV;
 
-    preV[0] = neuron_model::func1(Yn) + ampl * sin((Xn - step) * freq);
+    preV[0] = neuron_model::func1(Yn) + ampl * sin((Xn) * freq);
     preV[1] = neuron_model::func2(Yn);
     //preV[0] = Yn[0] - Yn[0] * Yn[0] * Yn[0] * 0.333 - Yn[1] + ampl * sin((Xn - step) * freq);
     //preV[1] = 0.05 * Yn[0] + 0.055;
@@ -44,7 +44,7 @@ void heun(double* Yn, double Xn, double noise)
     V[0] = Yn[0] + preV[0] * step;
     V[1] = Yn[1] + preV[1] * step;
 
-    double tmp = neuron_model::func1(V) + ampl * sin(Xn * freq);
+    double tmp = neuron_model::func1(V) + ampl * sin((Xn + step) * freq);
     V1[0] = Yn[0] + 0.5 * (preV[0] + tmp) * step;
     //double tmp = V[0] - V[0] * V[0] * V[0] * 0.333 - V[1] + ampl * sin(Xn * freq);
     //V1[0] = Yn[0] + 0.5 * (preV[0] + tmp) * step;
@@ -56,6 +56,14 @@ void heun(double* Yn, double Xn, double noise)
 
     Yn[0] = V1[0] + noise;
     Yn[1] = V1[1];
+}
+
+void heun1(double* Yn, double Xn, double noise)
+{
+    neuron_model::vector v, v_, preV;
+
+    v_ ;
+
 }
 
 #endif

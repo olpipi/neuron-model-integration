@@ -16,10 +16,10 @@ namespace neuron_model
 
     inline double func1(vector v)
     {
-        return (*v) - (*v) * (*v) * (*v) * 0.3333 - (v[1]);
+        return (v[0]) - (v[0]) * (v[0]) * (v[0]) * 0.3333 - (v[1]);
     }
     inline double  func2(vector v) {
-        return 0.05 * (*v) + 0.055;
+        return 0.05 * (v[0]) + 0.055;
     }
 
 #endif
