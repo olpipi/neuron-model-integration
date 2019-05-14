@@ -28,6 +28,38 @@ void Model_next_Step(double* V, double t, double noise)
 }
 
 #if MODEL == HODGKIN_HUXLEY
+void heun(double* Yn, double Xn, double noise)
+{
+    neuron_model::vector V, V1, preV;
+
+    preV[0] = neuron_model::func1(Yn) + ampl * sin((Xn)* freq);
+    preV[1] = neuron_model::func2(Yn);
+    preV[1] = neuron_model::func3(Yn);
+    preV[1] = neuron_model::func4(Yn);
+
+    V[0] = Yn[0] + preV[0] * step;
+    V[1] = Yn[1] + preV[1] * step;
+    V[2] = Yn[2] + preV[2] * step;
+    V[3] = Yn[3] + preV[3] * step;
+
+    double tmp1 = neuron_model::func1(V) + ampl * sin((Xn + step) * freq);
+    V1[0] = Yn[0] + 0.5 * (preV[0] + tmp1) * step;
+
+    double tmp2 = neuron_model::func2(V);
+    V1[1] = Yn[1] + 0.5 * (preV[1] + tmp2) * step;
+
+    double tmp3 = neuron_model::func3(V);
+    V1[2] = Yn[2] + 0.5 * (preV[2] + tmp3) * step;
+
+    double tmp4 = neuron_model::func4(V);
+    V1[3] = Yn[3] + 0.5 * (preV[3] + tmp4) * step;
+
+    Yn[0] = V1[0] + noise;
+    Yn[1] = V1[1];
+    Yn[2] = V1[2];
+    Yn[3] = V1[3];
+}
+
 
 #elif MODEL == FITZHUGH_NAGUMO
 
@@ -58,12 +90,5 @@ void heun(double* Yn, double Xn, double noise)
     Yn[1] = V1[1];
 }
 
-void heun1(double* Yn, double Xn, double noise)
-{
-    neuron_model::vector v, v_, preV;
-
-    v_ ;
-
-}
 
 #endif

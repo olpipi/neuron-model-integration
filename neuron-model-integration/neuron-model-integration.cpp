@@ -18,7 +18,7 @@ using namespace std;
 
 #define INTEL_RANDOM_GENERATOR
 
-#define TIME 400
+#define TIME 15000
 
 #define NUMAVE 10000
 
@@ -26,8 +26,8 @@ using namespace std;
 #define FREQ_FINISH 0.017
 #define FREQ_STEP 1.05
 
-#define NOISE_START 0.0001
-#define NOISE_FINISH 10
+#define NOISE_START 0.00001
+#define NOISE_FINISH 0.0001
 #define NOISE_STEP 1.1
 
 double SIGNAL = 0.5;
@@ -67,21 +67,21 @@ void escape_time_parallel_launch(ofstream *fout) {
         //unsigned int start_time = clock();
         setParams(STEP, FREQ, SIGNAL);
         double noiseParam = sqrt(2 * dispercy * STEP);
-        double noise = 0.0;
-
-#pragma omp parallel reduction(+:EscTime,EscTime2) private(noise)
+        
+        int steps = (int)TIME / STEP;
+#pragma omp parallel reduction(+:EscTime,EscTime2)
         {
             //            std::cout << omp_get_thread_num() << " ";
+            double noise = 0.0;
             neuron_model::vector Y;
+#ifdef INTEL_RANDOM_GENERATOR
+            double* noiseArray = new double[steps + 10];
+#endif
 #pragma omp for
-
             for (int k = 0; k < NUMAVE; k++) {
-                
                 setDefaultPoint(Y);
 
-                int steps = (int)TIME / STEP;
 #ifdef INTEL_RANDOM_GENERATOR
-                double* noiseArray = new double[steps + 10];
 
                 getNoiseArray(0, noiseParam, steps + 10, noiseArray);
 #endif
@@ -98,7 +98,7 @@ void escape_time_parallel_launch(ofstream *fout) {
                     Model_next_Step(Y, currentTime, noise);
 
 
-                    if (Y[0] > 1) {
+                    if (Y[0] > 0) {
                         break;
                     }
 
@@ -108,12 +108,10 @@ void escape_time_parallel_launch(ofstream *fout) {
                 EscTime += currentTime;
                 EscTime2 += currentTime * currentTime;
 
-
-#ifdef INTEL_RANDOM_GENERATOR
-                delete[] noiseArray;
-#endif
             }
-            delete[]Y;
+#ifdef INTEL_RANDOM_GENERATOR
+            delete[] noiseArray;
+#endif
         }
         EscTime /= NUMAVE;
         EscTime2 /= NUMAVE;
@@ -192,7 +190,7 @@ void getAllGeneratingTime(ofstream *fout) {
 
 int main() {
 
-#if 1
+#if 0
     ofstream fout("out1.txt");
     
     getAllGeneratingTime(&fout);
@@ -200,10 +198,9 @@ int main() {
     fout.close();
 
 #else
-    ifstream fin("input.txt");
+    ifstream fin("out1.txt");
 
     double dummy;
-    fin >> SIGNAL >> FREQ >> dummy;
     FREQ = FREQ_START;
 
     while (!fin.eof())
@@ -211,18 +208,20 @@ int main() {
 
         double dummy;
         fin >> SIGNAL >> FREQ >> dummy;
+        FREQ *= 0.9;
+        for (int i = 0; i < 5; i++)
+        {
+            std::cout << "FREQ = " << FREQ << "\n";
+            std::ostringstream strs;
+            strs << SIGNAL << "_" << FREQ;
+            std::string str = strs.str();
+            str += ".txt";
+            ofstream fout(str);
 
-        std::cout << "FREQ = " << FREQ << "\n";
-        std::ostringstream strs;
-        strs << SIGNAL << "_" << FREQ;
-        std::string str = strs.str();
-        str += ".txt";
-        ofstream fout(str);
-
-        escape_time_parallel_launch(&fout);
-        FREQ *= FREQ_STEP;
-        fout.close();
-
+            escape_time_parallel_launch(&fout);
+            FREQ *= FREQ_STEP;
+            fout.close();
+        }
     }
     fin.close();
 

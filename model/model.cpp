@@ -16,6 +16,14 @@ namespace neuron_model
         V[3] = 0.3177;
     }
 
+    inline double exp2(double x)
+    {
+        x = 1.0 + x / 1024;
+        x *= x; x *= x; x *= x; x *= x;
+        x *= x; x *= x; x *= x; x *= x;
+        x *= x; x *= x;
+        return x;
+    }
 
 
 
