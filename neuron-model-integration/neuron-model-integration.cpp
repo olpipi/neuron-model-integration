@@ -18,7 +18,7 @@ using namespace std;
 
 #define INTEL_RANDOM_GENERATOR
 
-#define TIME 15000
+#define TIME 100
 
 #define NUMAVE 10000
 
@@ -98,7 +98,7 @@ void escape_time_parallel_launch(ofstream *fout) {
                     Model_next_Step(Y, currentTime, noise);
 
 
-                    if (Y[0] > 0) {
+                    if (Y[0] > 20) {
                         break;
                     }
 
@@ -136,46 +136,48 @@ void simplelaunch(ofstream *fout) {
 
     double dispercy = 0.01;
     double noise;
-    FREQ = 1.5;
-    SIGNAL = 0.5;
-    double *V = new double[N];
+    FREQ = 50;
+    SIGNAL = 4;
+    neuron_model::vector V;
     setParams(STEP, FREQ, SIGNAL);
     setDefaultPoint(V);
 
     for (double i = 0; i < TIME; i += STEP) {
 
-        noise = newnoise();
+        //noise = newnoise();
 
         //Model_next_Step(V, i, (noise * sqrt(2 * dispercy * STEP)));
         Model_next_Step(V, i, 0);
-        *fout << i << " " << *V << " " << V[1] << "\n";
+        *fout << i;
+        for (size_t i = 0; i < N; i++)
+        {
+            *fout << " " << V[i];
+        }
+        *fout << "\n";
     }
-    delete[]V;
 
 }
 
 inline double generatingTime() {
-    double *Y = new double[2];
+    neuron_model::vector Y;
     setDefaultPoint(Y);
     for (double i = 0; i <= TIME; i += STEP) {
 
         Model_next_Step(Y, i, 0 /*noise*/);
 
-        if (Y[0] > 0) {
-            delete[]Y;
+        if (Y[0] > 20) {
             return i;
         }
     }
 
-    delete[]Y;
     return -1;
 }
 
 void getAllGeneratingTime(ofstream *fout) {
     double tmp;
-    for (SIGNAL = 0.1; SIGNAL <= 1.0; SIGNAL += 0.1)
+    for (SIGNAL = 2; SIGNAL <= 5; SIGNAL += 0.5)
     {
-        for (FREQ = 0.001; FREQ < 0.2; FREQ *= 1.05)
+        for (FREQ = 10; FREQ < 50; FREQ += 1)
         {
             setParams(STEP, FREQ, SIGNAL);
             tmp = generatingTime();
@@ -190,15 +192,16 @@ void getAllGeneratingTime(ofstream *fout) {
 
 int main() {
 
-#if 0
-    ofstream fout("out1.txt");
+
+#if 1
+    ofstream fout("out.txt");
     
     getAllGeneratingTime(&fout);
     //simplelaunch(&fout);
     fout.close();
 
 #else
-    ifstream fin("out1.txt");
+    ifstream fin("out.txt");
 
     double dummy;
     FREQ = FREQ_START;

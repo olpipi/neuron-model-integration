@@ -16,7 +16,7 @@ namespace neuron_model
         V[3] = 0.3177;
     }
 
-    inline double exp2(double x)
+    double exp2(double x)
     {
         x = 1.0 + x / 1024;
         x *= x; x *= x; x *= x; x *= x;
@@ -24,6 +24,17 @@ namespace neuron_model
         x *= x; x *= x;
         return x;
     }
+
+    double fastPow(double a, double b) {
+        union {
+            double d;
+            __int32 x[2];
+        } u = { a };
+        u.x[1] = (int)(b * (u.x[1] - 1072632447) + 1072632447);
+        u.x[0] = 0;
+        return u.d;
+    }
+
 
 
 

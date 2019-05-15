@@ -5,7 +5,7 @@
 #define FITZHUGH_NAGUMO 2
 
 #ifndef MODEL
-#define MODEL 2
+#define MODEL 1
 #endif
 
 namespace neuron_model
