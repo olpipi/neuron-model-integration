@@ -18,16 +18,16 @@ using namespace std;
 
 #define INTEL_RANDOM_GENERATOR
 
-#define TIME 100
+#define TIME 5000
 
-#define NUMAVE 10000
+#define NUMAVE 5000
 
 #define FREQ_START 0.017
 #define FREQ_FINISH 0.017
 #define FREQ_STEP 1.05
 
-#define NOISE_START 0.00001
-#define NOISE_FINISH 0.0001
+#define NOISE_START 0.0001
+#define NOISE_FINISH 10
 #define NOISE_STEP 1.1
 
 double SIGNAL = 0.5;
@@ -134,9 +134,9 @@ void escape_time_parallel_launch(ofstream *fout) {
 
 void simplelaunch(ofstream *fout) {
 
-    double dispercy = 0.01;
+    double dispercy = 0.5;
     double noise;
-    FREQ = 50;
+    FREQ = 18;
     SIGNAL = 4;
     neuron_model::vector V;
     setParams(STEP, FREQ, SIGNAL);
@@ -144,10 +144,10 @@ void simplelaunch(ofstream *fout) {
 
     for (double i = 0; i < TIME; i += STEP) {
 
-        //noise = newnoise();
+        noise = newnoise();
 
-        //Model_next_Step(V, i, (noise * sqrt(2 * dispercy * STEP)));
-        Model_next_Step(V, i, 0);
+        Model_next_Step(V, i, (noise * sqrt(2 * dispercy * STEP)));
+        //Model_next_Step(V, i, 0);
         *fout << i;
         for (size_t i = 0; i < N; i++)
         {
@@ -191,9 +191,9 @@ void getAllGeneratingTime(ofstream *fout) {
 
 
 int main() {
+    InitGen();
 
-
-#if 1
+#if 0
     ofstream fout("out.txt");
     
     getAllGeneratingTime(&fout);
@@ -231,6 +231,7 @@ int main() {
 
 #endif
 
+    FreeGen();
     return 0;
 }
 

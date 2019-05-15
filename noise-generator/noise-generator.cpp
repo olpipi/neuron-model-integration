@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include "pch.h"
 
+VSLStreamStatePtr global_stream;
 
 WORD getStandartSeed() {
     WORD time;
@@ -12,15 +13,16 @@ WORD getStandartSeed() {
     return time;
 }
 
-VSLStreamStatePtr InitGen() {
+void InitGen() {
     VSLStreamStatePtr stream;
     WORD BIG_SEED = getStandartSeed();
     const unsigned int seed[2] = { BIG_SEED, BIG_SEED };
     vslNewStreamEx(&stream, VSL_BRNG_MCG59, 2, seed);
-    return stream;
+
+    global_stream =  stream;
 }
-void FreeGen(VSLStreamStatePtr stream) {
-    vslDeleteStream(&stream);
+void FreeGen(void) {
+    vslDeleteStream(&global_stream);
 }
 void GenerateGauss(double a, double b, int count,
     VSLStreamStatePtr stream, double *z)
@@ -30,7 +32,5 @@ void GenerateGauss(double a, double b, int count,
 
 
 void getNoiseArray(double expectedValue, double deviation, int size, double * buffer) {
-    VSLStreamStatePtr stream = InitGen();
-    GenerateGauss(0, deviation, size, stream, buffer);
-    FreeGen(stream);
+    GenerateGauss(expectedValue, deviation, size, global_stream, buffer);
 }
